@@ -1,12 +1,14 @@
-const ListWishes = require("../models/ListWishes")
 
-const existsIdListWish=async(id)=>{
-  const existList=await ListWishes.findById(id)
-  if(!existList){
+const Usuario = require("../models/Usuario")
+
+const existsIdUser=async(id)=>{
+  const existId=await Usuario.findById(id)
+  if(!existId){
     throw new Error( `El id no existe enla db: ${id}`)
   }
 }
 
 module.exports={
-    existsIdListWish
+
+    existsIdUser
 }

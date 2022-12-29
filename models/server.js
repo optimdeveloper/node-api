@@ -8,7 +8,6 @@ class Server {
         this.app  = express();
         this.port = process.env.PORT;
         this.usuariosPath = '/api/usuarios';
-        this.listWishPath = '/api/list_wishes';
 
         // connection database
         this.conectarDB();
@@ -37,7 +36,6 @@ class Server {
 
     routes() {
         this.app.use( this.usuariosPath, require('../routes/usuarios'));
-        this.app.use( this.listWishPath, require('../routes/list_wishes'));
     }
 
     listen() {

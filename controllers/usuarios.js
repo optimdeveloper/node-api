@@ -1,74 +1,76 @@
 const { response, request } = require('express');
 const User =require('../models/Usuario')
-const bcryptjs = require('bcryptjs');
 
-const {validationResult} = require('express-validator')
-
-const usuariosGet = (req = request, res = response) => {
-    const { q, nombre = 'No name', apikey, page = 1, limit } = req.query;
+const usersGet = async (req = request, res = response) => {
+    const {limit = 50,from=0 } = req.query;
+    const users=await (await (User.find().skip(Number(from)).limit(Number(limit)))).reverse()
     res.json({
-        msg: 'get API - controlador',
-        q,
-        nombre,
-        apikey,
-        page, 
-        limit
+        users
     });
 }
 
-const usuariosPost = async(req, res = response) => {
-    const errors=validationResult(req);
-    if(!errors.isEmpty()){
-        return res.status(400).json(errors)
-    }
-    const {name, email, rol,password} = req.body;
-    const user =new User({name,email,rol,password});
-
-   const existEmail= await User.findOne({email})
-    if(existEmail){
-       return res.status(400).json({
-            msg:'Email already registered'
-       })
-   }
-
-    const salt=bcryptjs.genSaltSync();
-    user.password=bcryptjs.hashSync(password,salt)
-    await user.save()
+const userGet = async(req, res = response) => {
+    const {id} = req.params;
+    const query = await User.findById(id)
+    
     res.json({
-        msg: 'post API - usuariosPost',
+        query
+    });
+}
+
+const usersPost = async(req, res = response) => {
+   
+    const {name, document, address, phone} = req.body;
+    const user =new User({name,document,address,phone});
+
+   const existDocument= await User.findOne({document})
+    /*if(existDocument){
+       return res.status(400).json({
+            msg:'Nro. document already registered'
+       })
+   }*/
+    await user.save()
+    res.status(200).json({
         user
     });
 }
 
-const usuariosPut = (req, res = response) => {
+const usersPut = async (req, res = response) => {
 
-    const { id } = req.params;
+    const {id,...data} = req.body;
 
-    res.json({
-        msg: 'put API - usuariosPut',
-        id
+     await User.findByIdAndUpdate(id,data)
+   
+    res.status(200).json({
+        msg: 'user updated',
     });
 }
 
-const usuariosPatch = (req, res = response) => {
-    res.json({
-        msg: 'patch API - usuariosPatch'
-    });
-}
-
-const usuariosDelete = (req, res = response) => {
-    res.json({
-        msg: 'delete API - usuariosDelete'
+const userDelete =async  (req, res = response) => {
+    const {id} = req.params;
+    await User.findByIdAndDelete(id)
+    res.status(200).json({
+        msg: 'user deleted'
     });
 }
 
 
+const userDeleteSome =async  (req, res = response) => {
+    const {users} = req.body;
+    users.map(async id=>{
+        await User.findByIdAndDelete(id)
+    })
+    res.status(200).json({
+        msg: 'users deleted'
+    });
+}
 
 
 module.exports = {
-    usuariosGet,
-    usuariosPost,
-    usuariosPut,
-    usuariosPatch,
-    usuariosDelete,
+    userGet,
+    usersGet,
+    usersPost,
+    usersPut,
+    userDelete,
+    userDeleteSome
 }
